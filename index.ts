@@ -11,9 +11,10 @@ type Dot = { x: number, y: number, mass: number, linked?: Dot[] }
 let dots: Dot[] = []
 function drawDot(dot: Dot, ct: CanvasRenderingContext2D = context) {
     ct.beginPath()
-    let radius = 3
-    ct.ellipse(dot.x, dot.y, radius, radius, 0, 0, 360)
+    let radius = 5
+    ct.ellipse(dot.x, dot.y, radius, radius, 0, 0, 300)
     ct.fill()
+    // ct.fillStyle = ["red", "blue", "green", "orange", "yellow"][Math.round(Math.random()*5)]
     ct.closePath()
     return dot
 }
@@ -45,22 +46,30 @@ function drawFrame() {
     })
 }
 function createTestDots() {
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 200; i++) {
         dots.push(drawDot({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, mass: 1 }))
     }
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 120; i++) {
         let dot1 = dots[Math.round(dots.length * Math.random())]
         let dot2 = dots[Math.round(dots.length * Math.random())]
         if (dot1 && dot2 && dot1 !== dot2) {
             createLink(dot1, dot2)
         }
     }
+    dots.forEach((dot) => {
+        if (!dot.linked) {
+            dot.linked = []
+        }
+        if (dot.linked.length === 0 && Math.random() > 0.99) {
+            dot.linked.push(dots[Math.floor(Math.random()*dots.length)])
+        }
+    })
 }
-let C1CONSTANT_spring_stiffness_i_think = 2
-let C2CONSTANT_organicity_instead_of_straight_lines = 1
-let C3CONSTANT_repulse_non_linked = 1
-let C4CONSTANT_overall_force = 0.2
-let C5CONSTANT_central_force = 0
+let C1CONSTANT_spring_stiffness_i_think = 5
+let C2CONSTANT_organicity_instead_of_straight_lines = 3
+let C3CONSTANT_repulse_non_linked = 5
+let C4CONSTANT_overall_force = 2
+let C5CONSTANT_central_force = 0.01
 function moveDots() {
     dots.forEach(dot => {
         if (dot.linked === undefined) {
@@ -78,8 +87,8 @@ function moveDots() {
                 // repel non linked
                 dot.x += C3CONSTANT_repulse_non_linked / Math.sqrt(getDotDistance(dot, dot2).x) * getDirectionFor1(dot, dot2).x * C4CONSTANT_overall_force * (1/dot.mass)
                 dot.y += C3CONSTANT_repulse_non_linked / Math.sqrt(getDotDistance(dot, dot2).y) * getDirectionFor1(dot, dot2).y * C4CONSTANT_overall_force * (1/dot.mass)
-                dot2.x += C3CONSTANT_repulse_non_linked / Math.sqrt(getDotDistance(dot, dot2).x) * getDirectionFor1(dot, dot2).x * -1 * C4CONSTANT_overall_force * (1/dot2.mass)
-                dot2.y += C3CONSTANT_repulse_non_linked / Math.sqrt(getDotDistance(dot, dot2).y) * getDirectionFor1(dot, dot2).y * -1 * C4CONSTANT_overall_force * (1/dot2.mass)
+                // dot2.x += C3CONSTANT_repulse_non_linked / Math.sqrt(getDotDistance(dot, dot2).x) * getDirectionFor1(dot, dot2).x * -1 * C4CONSTANT_overall_force * (1/dot2.mass)
+                // dot2.y += C3CONSTANT_repulse_non_linked / Math.sqrt(getDotDistance(dot, dot2).y) * getDirectionFor1(dot, dot2).y * -1 * C4CONSTANT_overall_force * (1/dot2.mass)
             }
         })
         let centerCoord = { x: innerWidth / 2, y: innerHeight / 2, mass: 100 }
@@ -108,7 +117,9 @@ let origCentral = C5CONSTANT_central_force
 function animar() {
     if (iterations < 10000) {
         if (iterations % 5 === 0 && C5CONSTANT_central_force < origCentral * 10) {
-            C5CONSTANT_central_force *= 1.05
+            C5CONSTANT_central_force *= 1.2
+        } else {
+            C4CONSTANT_overall_force /= 1.02
         }
         // if (iterations < 50) {
         //     C1CONSTANT_spring_stiffness_i_think *= 1.2
